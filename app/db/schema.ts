@@ -2,17 +2,17 @@ import { integer, pgTable, uuid, varchar } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('User', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
-    email: varchar('email', { length: 64 }).notNull(),
+    email: varchar('email', { length: 64 }).notNull().unique(),
     password: varchar('password', { length: 64 }).notNull()
 })
 
-export const tabs = pgTable('Tabs', {
+export const tabs = pgTable('Tab', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     userId: uuid('user_id').notNull().references(() => users.id),
     name: varchar('name', { length: 64 }).notNull()
 })
 
-export const bookmarks = pgTable('Bookmarks', {
+export const bookmarks = pgTable('Bookmark', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     tabId: uuid('tab_id').notNull().references(() => tabs.id),
     url: varchar('url', { length: 256 }).notNull(),

@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1708703480617,
-      "tag": "0000_wise_lockheed",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1708717056356,
-      "tag": "0001_chunky_cardiac",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1708717740568,
-      "tag": "0002_open_korvac",
+      "when": 1708720945186,
+      "tag": "0000_unusual_lethal_legion",
       "breakpoints": true
     }
   ]

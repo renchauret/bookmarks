@@ -21,8 +21,21 @@ export async function createUser(email: string, password: string) {
     return db.insert(users).values({ email, password: hash })
 }
 
+export async function getTabs(userId: string) {
+    return db.select().from(tabs).where(eq(tabs.userId, userId))
+}
+
+export async function getTabsByEmail(email: string) {
+    const users = await getUser(email)
+    return users.length > 0 ? getTabs(users[0].id) : []
+}
+
 export async function createTab(userId: string, name: string) {
     return db.insert(tabs).values({ userId, name })
+}
+
+export async function getBookmarks(tabId: string) {
+    return db.select().from(bookmarks).where(eq(bookmarks.tabId, tabId))
 }
 
 export async function createBookmark(tabId: string, url: string, title: string, row: number, column: number) {
