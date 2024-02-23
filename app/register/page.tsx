@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { Form } from 'app/form'
+import { Form } from '@/app/login/form'
 import { redirect } from 'next/navigation'
 import { createUser, getUser } from '@/app/db/db'
-import { SubmitButton } from 'app/submit-button'
+import { SubmitButton } from '@/app/components/submit-button'
 
 export default function Login() {
   async function register(formData: FormData) {
