@@ -1,0 +1,1 @@
+ALTER TABLE "Tabs" ADD COLUMN "name" varchar(64) NOT NULL;

@@ -4,6 +4,7 @@
       "semi": ["error", "never"],
       "quotes": ["error", "single"],
       "eqeqeq": "error",
-      "camelcase": "warn"
+      "camelcase": "warn",
+      "indent": ["error", 4]
     }
 }
