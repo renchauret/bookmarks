@@ -1,8 +1,11 @@
+'use server'
+
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
 import { genSaltSync, hashSync } from 'bcrypt-ts'
-import { bookmarks, tabs, users } from '@/app/db/schema'
+import { Bookmark, bookmarks, Tab, tabs, User, users } from '@/app/db/schema'
+import { Session } from 'next-auth'
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -10,34 +13,61 @@ import { bookmarks, tabs, users } from '@/app/db/schema'
 let client = postgres(`${process.env.POSTGRES_URL!}?sslmode=require`)
 let db = drizzle(client)
 
-export async function getUser(email: string) {
-    return db.select().from(users).where(eq(users.email, email))
+export const getUser = async (email: string): Promise<User | null> => {
+    const results = await db.select().from(users).where(eq(users.email, email))
+    return results.length > 0 ? results[0] : null
 }
 
-export async function createUser(email: string, password: string) {
+export const createUser = async (email: string, password: string) => {
     let salt = genSaltSync(10)
     let hash = hashSync(password, salt)
 
     return db.insert(users).values({ email, password: hash })
 }
 
-export async function getTabs(userId: string) {
+export const retrieveTabs = async (session: Session | null): Promise<Tab[]> => {
+    return (
+        session ?
+            await getTabs(session.user.id) :
+            await getTabsByEmail('renaudchauret@gmail.com')
+    ) ?? []
+}
+
+const getTabs = async (userId: string): Promise<Tab[]> => {
     return db.select().from(tabs).where(eq(tabs.userId, userId))
 }
 
-export async function getTabsByEmail(email: string) {
-    const users = await getUser(email)
-    return users.length > 0 ? getTabs(users[0].id) : []
+const getTabsByEmail = async (email: string): Promise<Tab[]> => {
+    const user = await getUser(email)
+    return user ? getTabs(user.id) : []
 }
 
-export async function createTab(userId: string, name: string) {
-    return db.insert(tabs).values({ userId, name })
+const getTab = async (tabId: string): Promise<Tab | null> => {
+    const results = await db.select().from(tabs).where(eq(tabs.id, tabId))
+    return results.length > 0 ? results[0] : null
 }
 
-export async function getBookmarks(tabId: string) {
+export const createTab = async (session: Session, name: string) => {
+    return db.insert(tabs).values({ userId: session.user.userId, name })
+}
+
+export const deleteTab = async (session: Session, tabId: string) => {
+    const tab = await getTab(tabId)
+    if (!tab || tab.userId !== session.user.userId) {
+        throw new Error('Invalid tab')
+    }
+    db.delete(bookmarks).where(eq(bookmarks.tabId, tabId))
+    return db.delete(tabs).where(eq(tabs.id, tabId))
+}
+
+export const getBookmarks = async (tabId: string): Promise<Bookmark[]> => {
     return db.select().from(bookmarks).where(eq(bookmarks.tabId, tabId))
 }
 
-export async function createBookmark(tabId: string, url: string, title: string, row: number, column: number) {
-    return db.insert(bookmarks).values({ tabId, url, title, row, column })
+export const createBookmark = async (session: Session, bookmark: Bookmark) => {
+    const tab = await getTab(bookmark.tabId)
+    if (!tab || tab.userId !== session.user.userId) {
+        throw new Error('Invalid tab')
+    }
+    return db.insert(bookmarks).values(bookmark)
 }
