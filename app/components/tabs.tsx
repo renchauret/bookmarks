@@ -1,22 +1,25 @@
-import { auth } from '@/app/auth'
+'use client'
+
+import { useState } from 'react'
 import { deleteTab, retrieveTabs, test } from '@/app/db/db'
 import { Session } from 'next-auth'
 import { Tab } from '@/app/db/schema'
 import { ClientButton } from '@/app/components/client-button'
+import { TabView } from '@/app/components/tab-view'
 
-export const Tabs = async () => {
-    const session: Session | null = await auth()
-    let tabs: Tab[] = await retrieveTabs()
+export const Tabs = ({ initialTabs, session }: { initialTabs: Tab[], session: Session | null }) => {
+    const [tabs, setTabs] = useState(initialTabs)
+
+    const deleteAndSet = async (id: string) => {
+        await deleteTab(id)
+        const updatedTabs = await retrieveTabs()
+        setTabs(updatedTabs)
+    }
 
     return (
         <div className='text-white'>
             {tabs.map(tab => (
-                <div key={tab.id}>
-                    {tab.name}{' '}
-                    {session && (
-                        <ClientButton id={tab.id} text='X' serverAction={deleteTab} />
-                    )}
-                </div>
+                <TabView key={tab.id} tab={tab} session={session} deleteTab={deleteAndSet} />
             ))}
             <span>
                 {session && (
